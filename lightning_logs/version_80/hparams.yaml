@@ -1,0 +1,8 @@
+dropout_rate: 0.1
+embed_dim: 128
+file_name: data/geese.csv
+gmm_dim: 3
+hidden_dim: 600
+pe: 1
+seq_length: 185
+vocab_dim: 1287

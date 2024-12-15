@@ -24,7 +24,7 @@ ABLATE_UNIFORM_FINE = False
 ABLATE_NO_PE = False
 ABLATE_BOW = False
 
-
+NUM_WORKERS = 4
 seed = torch.Generator().manual_seed(42)
 class RawDataset(Dataset):
     def __init__(self, df):
@@ -56,8 +56,8 @@ class Runner():
 
         # Split the data into training and testing sets
         X_train, X_test = data, test_set
-        train_loader = DataLoader(X_train, batch_size=16, num_workers=16)
-        validation_loader = DataLoader(X_test, batch_size=8, num_workers=16)
+        train_loader = DataLoader(X_train, batch_size=16, num_workers=NUM_WORKERS, persistent_workers=True)
+        validation_loader = DataLoader(X_test, batch_size=8, num_workers=NUM_WORKERS, persistent_workers=True)
 
         if not ABLATE_BOW:
             embed_epochs = wildgraph.EMBED_EPOCHS
@@ -126,7 +126,7 @@ class Runner():
         dataset = vae.CustomDataset(train_array)
         X_train = dataset
 
-        train_loader = DataLoader(X_train, batch_size=8, num_workers=8)
+        train_loader = DataLoader(X_train, batch_size=8, num_workers=NUM_WORKERS)
         autoencoder = vae.LitAutoEncoder(self.seq_len)
 
         trainer = L.Trainer(max_epochs=epochs, devices=1)
@@ -269,7 +269,7 @@ if __name__ == '__main__':
             test_len = len(test_index)
             touched1, touched2, touched3 = touched1/ test_len, touched2/test_len, touched3/test_len
 
-            #np.save(f"./wild_experiments_log/{args.exp}/{args.exp}_EPOCHS={args.epochs}_{rep}_k{k}_{args.dataset}.npy", generated)
+            np.save(f"./wild_experiments_log/{args.exp}/{args.exp}_EPOCHS={args.epochs}_{rep}_k{k}_{args.dataset}.npy", generated)
 
             logging.info(f"k: {k},########### Means:  mean_haus: {mean1}, mean_dtw {mean2} mean_fde {mean3} ({touched1}, {touched2}, {touched3}) corr={r},{chi}")
 

@@ -2,7 +2,7 @@ import torch
 from torch import optim, nn
 from torch.utils.data import Dataset
 from torch_geometric.nn import Node2Vec
-
+import torch.nn.functional as F
 import lightning as L
 
 import pdb
@@ -51,7 +51,9 @@ class EmbeddingModel(L.LightningModule):
         return loss
 
     def train_dataloader(self):
-        return self.embedding_layer.loader(batch_size=128, shuffle=True, num_workers=4)
+        loader = self.embedding_layer.loader(batch_size=128, shuffle=True, num_workers=0) 
+        iter(loader)    
+        return loader
 
     def forward(self, x):
         return self.embedding_layer(x)
@@ -88,11 +90,13 @@ class WildGraph(L.LightningModule):
                 nn.Linear(self.hparams.hidden_dim, self.hparams.vocab_dim)
             )
         })
+        
 
         self.loss = nn.CrossEntropyLoss()
         #self.positional_encoding = PositionalEncoding(self.hparams.embed_dim, self.hparams.seq_length)
         #self.embedding = nn.Embedding(self.hparams.vocab_dim, self.hparams.embed_dim)
         #self.layer_norm = nn.LayerNorm(self.hparams.embed_dim)
+
 
     def training_step(self, batch, batch_idx):
         x, y, pos = batch
@@ -129,6 +133,7 @@ class WildGraph(L.LightningModule):
         self.log("fde(min)", min, prog_bar=True, on_step=False, on_epoch=True)
         self.log("fde(max)", max, prog_bar=True, on_step=False, on_epoch=True)
         self.log("fde(mean)", mean, prog_bar=True, on_step=False, on_epoch=True)
+    
     def forward(self, x, y, pos):
         #return self.positional_encoding(self.embed_model(x.long()).squeeze(1), pos)
         z = self.model['encoder'](y.squeeze(-1))
